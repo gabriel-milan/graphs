@@ -13,10 +13,10 @@ public:
   virtual void writeInfoTo(const char *filename){};
   virtual void add_edge(unsigned vertexA, unsigned vertexB){};
   virtual vector<vector<unsigned>> bfs(unsigned vertex, const char *filename) { return vector<vector<unsigned>>(0); };
-  virtual void dfs(unsigned vertex, const char *filename){};
-  virtual unsigned getDistance(unsigned start, unsigned end) { return 0; };
-  virtual unsigned getDiameter() { return 0; };
-  virtual void getComponents(){};
+  virtual vector<vector<unsigned>> dfs(unsigned vertex, const char *filename) { return vector<vector<unsigned>>(0); };
+  virtual unsigned get_distance(unsigned start, unsigned end) { return 0; };
+  virtual unsigned get_diameter() { return 0; };
+  virtual void get_components(){};
 
 protected:
   unsigned n_edges;
