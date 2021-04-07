@@ -1,0 +1,58 @@
+name: Graphs CI
+
+on:
+  push:
+    branches:
+      - "master"
+    tags:
+      - "*"
+  pull_request:
+
+jobs:
+  before:
+    name: Check if building works
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - name: Set up GCC
+        uses: egor-tensin/setup-gcc@v1
+        with:
+          platform: x64
+      - name: Set up Python 3.8
+        uses: actions/setup-python@v2
+        with:
+          python-version: "3.8.x"
+          architecture: "x64"
+      - name: Build it
+        run: |
+          python setup.py install
+
+  tests:
+    needs: before
+    name: ${{ matrix.os }}${{ matrix.arch }} - Python ${{ matrix.python-version }} - tests
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        os: [ubuntu-latest, windows-latest, macos-latest]
+        arch: [x64]
+        python-version: ["3.6.x", "3.7.x", "3.8.x", "3.9.x"]
+    steps:
+      - uses: actions/checkout@v2
+      - name: Set up GCC
+        uses: egor-tensin/setup-gcc@v1
+        with:
+          platform: ${{ matrix.arch }}
+      - name: Set up Python
+        uses: actions/setup-python@v2
+        with:
+          python-version: ${{ matrix.python-version }}
+          architecture: ${{ matrix.arch }}
+      - name: Build
+        run: |
+          python setup.py install
+      - name: Install test dependencies
+        run: |
+          python -m pip install pytest-cov
+      - name: Run tests
+        run: |
+          pytest
