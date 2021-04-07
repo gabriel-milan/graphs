@@ -36,13 +36,19 @@ jobs:
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
-        os: [ubuntu-latest, windows-latest, macos-latest]
+        os: [ubuntu-latest, windows-latest]
         arch: [x64]
         python-version: ["3.6.x", "3.7.x", "3.8.x", "3.9.x"]
     steps:
       - uses: actions/checkout@v2
-      - name: Set up GCC
+      - if: matrix.os == 'ubuntu-latest'
+        name: Set up GCC
         uses: egor-tensin/setup-gcc@v1
+        with:
+          platform: ${{ matrix.arch }}
+      - if: matrix.os == 'windows-latest'
+        name: Set up MinGW
+        uses: egor-tensin/setup-mingw@v2
         with:
           platform: ${{ matrix.arch }}
       - name: Set up Python
