@@ -1,6 +1,6 @@
 #pragma once
 
-#include <bits/stdc++.h>
+#include <algorithm>
 #include <iostream>
 #include <fstream>
 #include <queue>
