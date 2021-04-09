@@ -25,6 +25,19 @@ size_t split(const string &txt, vector<string> &strs, char ch)
   return strs.size();
 }
 
+/*
+ * Code extracted from
+ * https://stackoverflow.com/a/18619293/9944075
+ */
+template <typename T>
+const bool Contains(std::vector<T> &Vec, const T &Element)
+{
+  if (std::find(Vec.begin(), Vec.end(), Element) != Vec.end())
+    return true;
+
+  return false;
+}
+
 template <typename T>
 vector<T> vec_stoi(const vector<string> vec)
 {
