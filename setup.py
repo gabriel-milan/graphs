@@ -82,8 +82,8 @@ def cpp_flag(compiler):
 class BuildExt(build_ext):
     """A custom build extension for adding compiler-specific options."""
     c_opts = {
-        'msvc': ['/EHsc'],
-        'unix': [],
+        'msvc': ['/EHsc', '-O3'],
+        'unix': ['-O3'],
     }
 
     if sys.platform == 'darwin':
