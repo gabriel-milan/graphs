@@ -82,7 +82,7 @@ def cpp_flag(compiler):
 class BuildExt(build_ext):
     """A custom build extension for adding compiler-specific options."""
     c_opts = {
-        'msvc': ['/EHsc', '/O3'],
+        'msvc': ['/EHsc', '/O2'],
         'unix': ['-O3'],
     }
 
