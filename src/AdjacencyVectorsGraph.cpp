@@ -235,7 +235,7 @@ public:
       // Sum for average degree
       averageDegree += degree;
       // Store on vector for median
-      degrees.push_back(degree);
+      degrees.push_back((int)degree);
     }
     // Dividing average by n_vertices
     averageDegree /= (double)this->n_vertices;
@@ -288,7 +288,7 @@ public:
       for (unsigned j = i; j < this->n_vertices; j++)
         if (results[2][j] == 1)
           visited[j] = true;
-        else if ((!nextDefined) and (!visited[j]))
+        else if ((!nextDefined) && (!visited[j]))
         {
           nextDefined = true;
           i = j;
