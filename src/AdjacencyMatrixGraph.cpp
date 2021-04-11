@@ -2,6 +2,7 @@
 
 #include <iostream>
 #include <fstream>
+#include <algorithm>
 #include <limits>
 #include <queue>
 #include <stack>
@@ -53,7 +54,7 @@ public:
     file << "degree_max=" << degreeInfo[1] << endl;
     file << "degree_avg=" << degreeInfo[2] << endl;
     file << "degree_median=" << degreeInfo[3] << endl;
-    // TODO: add information about components
+    file << "components=" << this->count_components() << endl;
     file.close();
   }
 
@@ -88,6 +89,8 @@ public:
     vector<int> parent = vector<int>(this->n_vertices, -1); // Default parent is -1
     // Vector of levels
     vector<int> level = vector<int>(this->n_vertices, numeric_limits<int>::max()); // Default level is max of integer
+    // Vector of visited vertices using ints (for output)
+    vector<int> visitedOutput = vector<int>(this->n_vertices);
     // Add initial vertex to queue, set its parent to itself and level to zero
     q.push(vertex - 1);
     parent[vertex - 1] = vertex - 1;
@@ -122,9 +125,14 @@ public:
         file << parent[i] + 1 << " " << level[i] << endl;
       file.close();
     }
+    // Generate visited output
+    for (unsigned int i = 0; i < this->n_vertices; i++)
+      if (visited[i])
+        visitedOutput[i] = 1;
     // Return output
     output.push_back(parent);
     output.push_back(level);
+    output.push_back(visitedOutput);
     return output;
   }
 
@@ -142,6 +150,8 @@ public:
     vector<int> parent = vector<int>(this->n_vertices, -1); // Default parent is -1
     // Vector of levels
     vector<int> level = vector<int>(this->n_vertices, numeric_limits<int>::max()); // Default level is max of integer
+    // Vector of visited vertices using ints (for output)
+    vector<int> visitedOutput = vector<int>(this->n_vertices);
     // Add initial vertex to queue, set its parent to itself and level to zero
     s.push(vertex - 1);
     parent[vertex - 1] = vertex - 1;
@@ -191,9 +201,14 @@ public:
         file << parent[i] + 1 << " " << level[i] << endl;
       file.close();
     }
+    // Generate visited output
+    for (unsigned int i = 0; i < this->n_vertices; i++)
+      if (visited[i])
+        visitedOutput[i] = 1;
     // Return output
     output.push_back(parent);
     output.push_back(level);
+    output.push_back(visitedOutput);
     return output;
   }
 
@@ -254,10 +269,36 @@ public:
     {
       vector<vector<int>> bfsOutput = this->bfs(i + 1, "");
       for (unsigned j = 0; j < this->n_vertices; j++)
-        if (bfsOutput[1][j] > (int)diameter)
+        if ((bfsOutput[1][j] > (int)diameter) && (bfsOutput[1][j] != numeric_limits<int>::max()))
           diameter = bfsOutput[1][j];
     }
     return diameter;
+  }
+
+  unsigned count_components()
+  {
+    unsigned components = 0;
+    vector<bool> visited = vector<bool>(n_vertices);
+    unsigned i = 0;
+    bool nextDefined = true;
+    while (i < this->n_vertices)
+    {
+      components++;
+      nextDefined = false;
+      visited[i] = true;
+      vector<vector<int>> results = this->bfs(i + 1, "");
+      for (unsigned j = i; j < this->n_vertices; j++)
+        if (results[2][j] == 1)
+          visited[j] = true;
+        else if ((!nextDefined) and (!visited[j]))
+        {
+          nextDefined = true;
+          i = j;
+        }
+      if (!nextDefined)
+        i = (int)this->n_vertices;
+    }
+    return components;
   }
 
 protected:

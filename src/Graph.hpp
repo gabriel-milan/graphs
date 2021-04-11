@@ -17,7 +17,7 @@ public:
   virtual vector<double> get_degree_info() { return vector<double>(0); };
   virtual unsigned get_distance(int start, int end) { return 0; };
   virtual unsigned get_diameter() { return 0; };
-  virtual void get_components(){};
+  virtual unsigned count_components() { return 0; };
 
 protected:
   unsigned n_edges;
