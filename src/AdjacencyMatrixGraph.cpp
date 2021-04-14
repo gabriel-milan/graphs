@@ -41,6 +41,7 @@ public:
       split(str, edgeVerticesStr, ' ');
       vector<int> edgeVertices = vec_stoi<int>(edgeVerticesStr);
       this->add_edge(edgeVertices[0], edgeVertices[1]);
+      this->n_edges += 1;
     }
   }
 
@@ -297,6 +298,36 @@ public:
         }
       if (!nextDefined)
         i = (int)this->n_vertices;
+    }
+    return components;
+  }
+
+  vector<vector<int>> get_components()
+  {
+    vector<vector<int>> components;
+    vector<bool> visited = vector<bool>(n_vertices);
+    unsigned i = 0;
+    bool nextDefined = true;
+    while (i < this->n_vertices)
+    {
+      vector<int> component;
+      nextDefined = false;
+      visited[i] = true;
+      vector<vector<int>> results = this->bfs(i + 1, "");
+      for (unsigned j = i; j < this->n_vertices; j++)
+        if (results[2][j] == 1)
+        {
+          visited[j] = true;
+          component.push_back(j);
+        }
+        else if ((!nextDefined) && (!visited[j]))
+        {
+          nextDefined = true;
+          i = j;
+        }
+      if (!nextDefined)
+        i = (int)this->n_vertices;
+      components.push_back(component);
     }
     return components;
   }
