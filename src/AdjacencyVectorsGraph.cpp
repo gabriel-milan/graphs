@@ -4,6 +4,7 @@
 #include <iostream>
 #include <fstream>
 #include <limits>
+#include <mutex>
 #include <queue>
 #include <stack>
 #include <string>
@@ -264,13 +265,16 @@ public:
   unsigned get_diameter()
   {
     unsigned diameter = 0;
-    for (unsigned i = 0; i < this->n_vertices; i++)
-    {
-      vector<vector<int>> bfsOutput = this->bfs(i + 1, "");
-      for (unsigned j = 0; j < this->n_vertices; j++)
-        if ((bfsOutput[1][j] > (int)diameter) && (bfsOutput[1][j] != numeric_limits<int>::max()))
-          diameter = bfsOutput[1][j];
-    }
+    vector<unsigned> diameters;
+    mutex *lock = new mutex();
+    parallel_for<unsigned>(
+        this->n_vertices, lock, &diameters, [this](int start, int end, mutex *lock, vector<unsigned> *results) {
+          this->process_chunk_for_diameter(start, end, lock, results);
+        },
+        true);
+    for (size_t i = 0; i < diameters.size(); i++)
+      if (diameters[i] > diameter)
+        diameter = diameters[i];
     return diameter;
   }
 
@@ -332,4 +336,18 @@ public:
 
 protected:
   vector<vector<int>> adjacencyVectors;
+  void process_chunk_for_diameter(int start, int end, mutex *lock, vector<unsigned> *diameters)
+  {
+    unsigned d = 0;
+    for (unsigned i = start; i < end; i++)
+    {
+      vector<vector<int>> bfsOutput = this->bfs(i + 1, "");
+      for (unsigned j = 0; j < this->get_n_vertices(); j++)
+        if ((bfsOutput[1][j] > (int)d) && (bfsOutput[1][j] != numeric_limits<int>::max()))
+          d = bfsOutput[1][j];
+    }
+    lock->lock();
+    diameters->push_back(d);
+    lock->unlock();
+  }
 };
