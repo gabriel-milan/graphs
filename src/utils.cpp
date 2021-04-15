@@ -6,6 +6,8 @@
 #include <string>
 #include <vector>
 
+#include <iostream>
+
 using namespace std;
 
 /*
@@ -74,8 +76,8 @@ vector<T> vec_stoi(const vector<string> vec)
 template <typename T>
 static void parallel_for(unsigned nb_elements,
                          mutex *lock,
-                         vector<T> results,
-                         std::function<void(int start, int end, mutex *lock, vector<T> results)> functor,
+                         vector<T> *results,
+                         std::function<void(int start, int end, mutex *lock, vector<T> *results)> functor,
                          bool use_threads = true)
 {
   // -------
