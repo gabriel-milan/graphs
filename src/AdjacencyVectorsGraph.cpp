@@ -59,11 +59,15 @@ public:
 
   void add_edge(int vertexA, int vertexB)
   {
-    this->n_edges++;
-    this->adjacencyVectors.at(vertexA - 1).push_back(vertexB);
-    sort(this->adjacencyVectors.at(vertexA - 1).begin(), this->adjacencyVectors.at(vertexA - 1).end());
-    this->adjacencyVectors.at(vertexB - 1).push_back(vertexA);
-    sort(this->adjacencyVectors.at(vertexB - 1).begin(), this->adjacencyVectors.at(vertexB - 1).end());
+    // If vertexB is not already connected with vertex A
+    if (std::find(this->adjacencyVectors.at(vertexA - 1).begin(), this->adjacencyVectors.at(vertexA - 1).end(), vertexB) == this->adjacencyVectors.at(vertexA - 1).end())
+    {
+      this->n_edges++;
+      this->adjacencyVectors.at(vertexA - 1).push_back(vertexB);
+      sort(this->adjacencyVectors.at(vertexA - 1).begin(), this->adjacencyVectors.at(vertexA - 1).end());
+      this->adjacencyVectors.at(vertexB - 1).push_back(vertexA);
+      sort(this->adjacencyVectors.at(vertexB - 1).begin(), this->adjacencyVectors.at(vertexB - 1).end());
+    }
   }
 
   void print_vectors()
