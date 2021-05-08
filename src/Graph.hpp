@@ -31,6 +31,21 @@ public:
     file.close();
   }
 
+  void export_to_file(string filename)
+  {
+    ofstream file(filename);
+    // Write number of vertices
+    file << this->n_vertices << endl;
+    // Write all edges (twice, for now)
+    // TODO: Look for a better way of doing this
+    for (unsigned i = 0; i < this->n_vertices; i++)
+    {
+      vector<int> neighbors = this->get_neighbors(i);
+      for (auto it = neighbors.begin(); it != neighbors.end(); ++it)
+        file << i + 1 << " " << *it + 1 << endl;
+    }
+  }
+
   vector<vector<int>> bfs(int vertex, string filename)
   {
     // Output vector

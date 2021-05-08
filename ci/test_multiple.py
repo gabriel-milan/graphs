@@ -1,3 +1,4 @@
+import os
 import graphs
 
 graph_list = [
@@ -66,6 +67,10 @@ def test_adjmatrix():
         assert g.get_distance(1, 3) == distance_results[i]
         g.add_edge(1, 3)
         assert g.get_distance(1, 3) == 1
+        g.export_to_file("graph.tmp")
+        g2 = graphs.AdjacencyMatrixGraph("graph.tmp")
+        assert g.get_degree_info() == g2.get_degree_info()
+        os.remove("graph.tmp")
 
 
 def test_adjvectors():
@@ -80,3 +85,7 @@ def test_adjvectors():
         assert g.get_distance(1, 3) == distance_results[i]
         g.add_edge(1, 3)
         assert g.get_distance(1, 3) == 1
+        g.export_to_file("graph.tmp")
+        g2 = graphs.AdjacencyVectorsGraph("graph.tmp")
+        assert g.get_degree_info() == g2.get_degree_info()
+        os.remove("graph.tmp")
