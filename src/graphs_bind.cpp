@@ -14,7 +14,7 @@ PYBIND11_MODULE(graphs, m)
         .def(py::init<>());
 
     py::class_<AdjacencyMatrixGraph>(m, "AdjacencyMatrixGraph")
-        .def(py::init<const char *>())
+        .def(py::init<string>())
         .def("add_edge", &AdjacencyMatrixGraph::add_edge)
         .def("bfs", &AdjacencyMatrixGraph::bfs)
         .def("dfs", &AdjacencyMatrixGraph::dfs)
@@ -29,7 +29,7 @@ PYBIND11_MODULE(graphs, m)
         .def("print_matrix", &AdjacencyMatrixGraph::print_matrix);
 
     py::class_<AdjacencyVectorsGraph>(m, "AdjacencyVectorsGraph")
-        .def(py::init<const char *>())
+        .def(py::init<string>())
         .def("add_edge", &AdjacencyVectorsGraph::add_edge)
         .def("bfs", &AdjacencyVectorsGraph::bfs)
         .def("dfs", &AdjacencyVectorsGraph::dfs)

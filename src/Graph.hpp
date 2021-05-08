@@ -11,16 +11,13 @@ class Graph
 public:
   Graph(){};
   virtual void add_edge(int vertexA, int vertexB){};
-  virtual vector<double> get_degree_info() { return vector<double>(0); };
-  virtual unsigned get_distance(int start, int end) { return 0; };
-  virtual unsigned get_diameter() { return 0; };
-  virtual unsigned count_components() { return 0; };
-  virtual vector<vector<int>> get_components() { return vector<vector<int>>(0); };
-  virtual unsigned get_n_edges() { return this->n_edges; };
-  virtual unsigned get_n_vertices() { return this->n_vertices; };
-  virtual vector<int> get_neighbors(int vertex){};
+  virtual vector<int> get_neighbors(int vertex) { return vector<int>(0); };
 
-  void info_to_file(const char *filename)
+  unsigned get_n_edges() { return this->n_edges; };
+
+  unsigned get_n_vertices() { return this->n_vertices; };
+
+  void info_to_file(string filename)
   {
     vector<double> degreeInfo = this->get_degree_info();
     ofstream file(filename);
@@ -34,7 +31,7 @@ public:
     file.close();
   }
 
-  vector<vector<int>> bfs(int vertex, const char *filename)
+  vector<vector<int>> bfs(int vertex, string filename)
   {
     // Output vector
     vector<vector<int>> output;
@@ -94,7 +91,7 @@ public:
     return output;
   }
 
-  vector<vector<int>> dfs(int vertex, const char *filename)
+  vector<vector<int>> dfs(int vertex, string filename)
   {
     // Output vector
     vector<vector<int>> output;
@@ -169,7 +166,122 @@ public:
     return output;
   }
 
+  vector<double> get_degree_info()
+  {
+    // Output vector
+    vector<double> output;
+    // Store degree information
+    vector<int> degrees;
+    // Storing stuff
+    double maxDegree = 0;
+    double minDegree = numeric_limits<double>::max();
+    double averageDegree = 0;
+    double medianDegree = 0;
+    // For each vertex, get degree information
+    for (unsigned i = 0; i < this->n_vertices; i++)
+    {
+      // Get degree
+      double degree = (double)this->get_neighbors(i).size();
+      // Check if it is maximum
+      if (degree > maxDegree)
+        maxDegree = degree;
+      // Check if it is mininum
+      if (degree < minDegree)
+        minDegree = degree;
+      // Sum for average degree
+      averageDegree += degree;
+      // Store on vector for median
+      degrees.push_back((int)degree);
+    }
+    // Dividing average by n_vertices
+    averageDegree /= (double)this->n_vertices;
+    // Sort vector for computing median
+    sort(degrees.begin(), degrees.end());
+    // If n_vertices is odd
+    if (this->n_vertices % 2 == 1)
+      medianDegree = degrees[(this->n_vertices - 1) / 2];
+    // n_vertices is even
+    else
+      medianDegree = (degrees[this->n_vertices / 2] + degrees[(this->n_vertices / 2) - 1]) / 2;
+    output.push_back(minDegree);
+    output.push_back(maxDegree);
+    output.push_back(averageDegree);
+    output.push_back(medianDegree);
+    return output;
+  }
+
+  unsigned get_distance(int vertexA, int vertexB)
+  {
+    vector<vector<int>> bfsOutput = this->bfs(vertexA, "");
+    return bfsOutput[1][vertexB - 1];
+  }
+
+  unsigned get_diameter()
+  {
+    unsigned diameter = 0;
+    vector<unsigned> diameters;
+    mutex *lock = new mutex();
+    parallel_for<unsigned>(
+        this->n_vertices, lock, &diameters, [this](int start, int end, mutex *lock, vector<unsigned> *results) {
+          this->process_chunk_for_diameter(start, end, lock, results);
+        },
+        true);
+    for (size_t i = 0; i < diameters.size(); i++)
+      if (diameters[i] > diameter)
+        diameter = diameters[i];
+    return diameter;
+  }
+
+  unsigned count_components()
+  {
+    return this->get_components().size();
+  }
+
+  vector<vector<int>> get_components()
+  {
+    vector<vector<int>> components;
+    vector<bool> visited = vector<bool>(n_vertices);
+    unsigned i = 0;
+    bool nextDefined = true;
+    while (i < this->n_vertices)
+    {
+      vector<int> component;
+      nextDefined = false;
+      visited[i] = true;
+      vector<vector<int>> results = this->bfs(i + 1, "");
+      for (unsigned j = i; j < this->n_vertices; j++)
+        if (results[2][j] == 1)
+        {
+          visited[j] = true;
+          component.push_back(j);
+        }
+        else if ((!nextDefined) && (!visited[j]))
+        {
+          nextDefined = true;
+          i = j;
+        }
+      if (!nextDefined)
+        i = (int)this->n_vertices;
+      components.push_back(component);
+    }
+    return components;
+  }
+
 protected:
   unsigned n_edges;
   unsigned n_vertices;
+  void process_chunk_for_diameter(int start, int end, mutex *lock, vector<unsigned> *diameters)
+  {
+    unsigned d = 0;
+    for (int i = start; i < end; i++)
+    {
+      vector<vector<int>> bfsOutput = this->bfs(i + 1, "");
+      for (unsigned j = 0; j < this->get_n_vertices(); j++)
+        if ((bfsOutput[1][j] > (int)d) && (bfsOutput[1][j] != numeric_limits<int>::max()))
+          d = bfsOutput[1][j];
+    }
+    lock->lock();
+    diameters->push_back(d);
+    lock->unlock();
+  }
 };
