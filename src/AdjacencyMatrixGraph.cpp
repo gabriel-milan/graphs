@@ -46,20 +46,6 @@ public:
     }
   }
 
-  void info_to_file(const char *filename)
-  {
-    vector<double> degreeInfo = this->get_degree_info();
-    ofstream file(filename);
-    file << "n_vertices=" << this->n_vertices << endl;
-    file << "n_edges=" << this->n_edges << endl;
-    file << "degree_min=" << degreeInfo[0] << endl;
-    file << "degree_max=" << degreeInfo[1] << endl;
-    file << "degree_avg=" << degreeInfo[2] << endl;
-    file << "degree_median=" << degreeInfo[3] << endl;
-    file << "components=" << this->count_components() << endl;
-    file.close();
-  }
-
   void add_edge(int vertexA, int vertexB)
   {
     this->adjacencyMatrix.at(vertexA - 1).at(vertexB - 1) = true;
@@ -79,138 +65,15 @@ public:
     }
   }
 
-  vector<vector<int>> bfs(int vertex, string filename)
+  vector<int> get_neighbors(int vertex)
   {
     // Output vector
-    vector<vector<int>> output;
-    // Vector of visited vertices
-    vector<bool> visited = vector<bool>(this->n_vertices);
-    // Queue for BFS
-    queue<int> q;
-    // Vector of parents
-    vector<int> parent = vector<int>(this->n_vertices, -1); // Default parent is -1
-    // Vector of levels
-    vector<int> level = vector<int>(this->n_vertices, numeric_limits<int>::max()); // Default level is max of integer
-    // Vector of visited vertices using ints (for output)
-    vector<int> visitedOutput = vector<int>(this->n_vertices);
-    // Add initial vertex to queue, set its parent to itself and level to zero
-    q.push(vertex - 1);
-    parent[vertex - 1] = vertex - 1;
-    level[vertex - 1] = 0;
-    visited[vertex - 1] = true;
-    // While queue is not empty
-    while (q.size() > 0)
-    {
-      // Dequeue v from queue
-      int v = q.front();
-      q.pop();
-      // For each adjacent vertex of v
-      for (size_t i = 0; i < this->adjacencyMatrix[v].size(); i++)
-        // If the adjacent vertex is not visited
-        if ((this->adjacencyMatrix[v][i]) && (!visited[i]))
-        {
-          // Push adjacent vertex into queue
-          q.push((int)i);
-          // Mark adjacent vertex as visited
-          visited[i] = true;
-          // Set parent to v
-          parent[i] = v;
-          // Set level to parent level + 1
-          level[i] = level[v] + 1;
-        }
-    }
-    // Write results to file (if requested)
-    if (!(filename == ""))
-    {
-      ofstream file(filename);
-      for (unsigned int i = 0; i < this->n_vertices; i++)
-        file << parent[i] + 1 << " " << level[i] << endl;
-      file.close();
-    }
-    // Generate visited output
-    for (unsigned int i = 0; i < this->n_vertices; i++)
-      if (visited[i])
-        visitedOutput[i] = 1;
-    // Return output
-    output.push_back(parent);
-    output.push_back(level);
-    output.push_back(visitedOutput);
-    return output;
-  }
-
-  vector<vector<int>> dfs(int vertex, string filename)
-  {
-    // Output vector
-    vector<vector<int>> output;
-    // Vector of visited vertices
-    vector<bool> visited = vector<bool>(this->n_vertices);
-    // Stack for DFS
-    stack<int> s;
-    // Stack for keeping track of parenting
-    stack<int> parentStack;
-    // Vector of parents
-    vector<int> parent = vector<int>(this->n_vertices, -1); // Default parent is -1
-    // Vector of levels
-    vector<int> level = vector<int>(this->n_vertices, numeric_limits<int>::max()); // Default level is max of integer
-    // Vector of visited vertices using ints (for output)
-    vector<int> visitedOutput = vector<int>(this->n_vertices);
-    // Add initial vertex to queue, set its parent to itself and level to zero
-    s.push(vertex - 1);
-    parent[vertex - 1] = vertex - 1;
-    level[vertex - 1] = 0;
-    // While queue is not empty
-    while (!s.empty())
-    {
-      // Pop vertex from stack
-      int u = s.top();
-      s.pop();
-      // If this vertex has no parent
-      if (parent[u] == -1)
-      {
-        // A possible parent for it is the top of the parent stack
-        int possibleParent = parentStack.top();
-        // While this possible parent has no edge with vertex "u"
-        while (!this->adjacencyMatrix[u][possibleParent])
-        {
-          // Pop parent from stack and get another
-          parentStack.pop();
-          possibleParent = parentStack.top();
-        }
-        // Set parent and level to parent's + 1
-        parent[u] = possibleParent;
-        level[u] = level[possibleParent] + 1;
-      }
-      // If u is not marked
-      if (!visited[u])
-      {
-        // Add "u" to parent stack
-        parentStack.push(u);
-        // Mark u as visited
-        visited[u] = true;
-        // For each vertex of graph
-        for (int i = (int)(this->n_vertices) - 1; i >= 0; i--)
-          // If vertex is adjacent to "u"
-          if (this->adjacencyMatrix[u][i])
-            // Push vertex into stack
-            s.push(i);
-      }
-    }
-    // Write results to file (if requested)
-    if (!(filename == ""))
-    {
-      ofstream file(filename);
-      for (unsigned i = 0; i < this->n_vertices; i++)
-        file << parent[i] + 1 << " " << level[i] << endl;
-      file.close();
-    }
-    // Generate visited output
-    for (unsigned int i = 0; i < this->n_vertices; i++)
-      if (visited[i])
-        visitedOutput[i] = 1;
-    // Return output
-    output.push_back(parent);
-    output.push_back(level);
-    output.push_back(visitedOutput);
+    vector<int> output;
+    // Add every neighbor to output vector
+    for (unsigned i = 0; i < this->n_vertices; i++)
+      if (this->adjacencyMatrix[vertex][i])
+        output.push_back(i);
+    // Return
     return output;
   }
 
