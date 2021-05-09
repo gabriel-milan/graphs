@@ -485,18 +485,18 @@ public:
     }
   }
 
-  unsigned get_distance(int vertexA, int vertexB)
+  float get_distance(int vertexA, int vertexB)
   {
     return this->get_all_distances(vertexA)[vertexB - 1];
   }
 
-  unsigned get_diameter()
+  float get_diameter()
   {
-    unsigned diameter = 0;
-    vector<unsigned> diameters;
+    float diameter = 0;
+    vector<float> diameters;
     mutex *lock = new mutex();
-    parallel_for<unsigned>(
-        this->n_vertices, lock, &diameters, [this](int start, int end, mutex *lock, vector<unsigned> *results) {
+    parallel_for<float>(
+        this->n_vertices, lock, &diameters, [this](int start, int end, mutex *lock, vector<float> *results) {
           this->process_chunk_for_diameter(start, end, lock, results);
         },
         true);
@@ -546,15 +546,15 @@ protected:
   unsigned n_vertices;
   bool is_weighted = false;
   bool has_negative_weight = false;
-  void process_chunk_for_diameter(int start, int end, mutex *lock, vector<unsigned> *diameters)
+  void process_chunk_for_diameter(int start, int end, mutex *lock, vector<float> *diameters)
   {
-    unsigned d = 0;
+    float d = 0;
     for (int i = start; i < end; i++)
     {
-      vector<vector<int>> bfsOutput = this->bfs(i + 1, "");
+      vector<float> distances = this->get_all_distances(i + 1);
       for (unsigned j = 0; j < this->get_n_vertices(); j++)
-        if ((bfsOutput[1][j] > (int)d) && (bfsOutput[1][j] != numeric_limits<int>::max()))
-          d = bfsOutput[1][j];
+        if ((distances[j] > d) && (distances[j] != numeric_limits<int>::max()))
+          d = distances[j];
     }
     lock->lock();
     diameters->push_back(d);
