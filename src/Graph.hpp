@@ -1,5 +1,7 @@
 #pragma once
 
+#include "MinHeap.hpp"
+
 using namespace std;
 
 /*
@@ -183,6 +185,75 @@ public:
     // Return output
     output.push_back(parent);
     output.push_back(level);
+    output.push_back(visitedOutput);
+    return output;
+  }
+
+  vector<vector<float>> dijkstra(int vertex, string filename)
+  {
+    // Fixing 1-indexed to 0-indexed
+    vertex--;
+    // Output vector
+    vector<vector<float>> output;
+    // Vector of visited vertices
+    vector<bool> visited = vector<bool>(this->n_vertices);
+    // Vector of parents
+    vector<float> parent = vector<float>(this->n_vertices, -1); // Default parent is -1
+    // Vector of distances
+    vector<float> distance = vector<float>(this->n_vertices, numeric_limits<int>::max()); // Default level is max of integer
+    // Vector of visited vertices using ints (for output)
+    vector<float> visitedOutput = vector<float>(this->n_vertices);
+    // Min binary heap
+    MinHeap minHeap = MinHeap(this->n_vertices);
+    // Initialize min heap
+    for (unsigned i = 0; i < this->n_vertices; i++)
+    {
+      minHeap.harr[i] = newMinHeapNode(i, distance[i]);
+      minHeap.pos[i] = i;
+    }
+    minHeap.heap_size = (int)this->n_vertices;
+    // Set initial vertex distance to 0 and its parent to itself
+    distance[vertex] = 0;
+    parent[vertex] = (float)vertex;
+    minHeap.decreaseKey(vertex, distance[vertex]);
+    // While the heap is not empty
+    while (!minHeap.isEmpty())
+    {
+      // Get vertex "u" of minimum distance
+      // and remove it from the heap
+      MinHeapNode *minVertex = minHeap.extractMin();
+      int u = minVertex->v;
+      // Mark as visited
+      visited[u] = true;
+      // For each adjacent vertex "v" of "u"
+      vector<tuple<int, float>> neighbors = this->get_neighbors(u);
+      for (auto it = neighbors.begin(); it != neighbors.end(); ++it)
+      {
+        int v = get<0>(*it);
+        float weight = get<1>(*it);
+        if (minHeap.isInMinHeap(v) && distance[v] > weight + distance[u])
+        {
+          parent[v] = (float)u;
+          distance[v] = distance[u] + weight;
+          minHeap.decreaseKey(v, distance[v]);
+        }
+      }
+    }
+    // Write results to file (if requested)
+    if (!(filename == ""))
+    {
+      ofstream file(filename);
+      for (unsigned int i = 0; i < this->n_vertices; i++)
+        file << parent[i] + 1 << " " << distance[i] << endl;
+      file.close();
+    }
+    // Generate visited output
+    for (unsigned int i = 0; i < this->n_vertices; i++)
+      if (visited[i])
+        visitedOutput[i] = 1;
+    // Return output
+    output.push_back(parent);
+    output.push_back(distance);
     output.push_back(visitedOutput);
     return output;
   }
