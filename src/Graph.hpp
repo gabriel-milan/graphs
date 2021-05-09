@@ -38,16 +38,16 @@ public:
     ofstream file(filename);
     // Write number of vertices
     file << this->n_vertices << endl;
-    // Write all edges (twice, for now)
-    // TODO: Look for a better way of doing this
+    // Write all edges only once
     for (unsigned i = 0; i < this->n_vertices; i++)
     {
       vector<tuple<int, float>> neighbors = this->get_neighbors(i);
       for (auto it = neighbors.begin(); it != neighbors.end(); ++it)
-        if (this->is_weighted)
-          file << i + 1 << " " << get<0>(*it) + 1 << " " << get<1>(*it) << endl;
-        else
-          file << i + 1 << " " << get<0>(*it) + 1 << endl;
+        if (get<0>(*it) < i)
+          if (this->is_weighted)
+            file << i + 1 << " " << get<0>(*it) + 1 << " " << get<1>(*it) << endl;
+          else
+            file << i + 1 << " " << get<0>(*it) + 1 << endl;
     }
   }
 
@@ -260,6 +260,79 @@ public:
     // Return output
     output.push_back(parent);
     output.push_back(distance);
+    output.push_back(visitedOutput);
+    return output;
+  }
+
+  vector<vector<float>> prim(int vertex, string filename)
+  {
+    // Fixing 1-indexed to 0-indexed
+    vertex--;
+    // Output vector
+    vector<vector<float>> output;
+    // Vector of visited vertices
+    vector<bool> visited = vector<bool>(this->n_vertices);
+    // Vector of parents
+    vector<float> parent = vector<float>(this->n_vertices, -1); // Default parent is -1
+    // Vector of costs
+    vector<float> cost = vector<float>(this->n_vertices, numeric_limits<int>::max()); // Default level is max of integer
+    // Vector of visited vertices using ints (for output)
+    vector<float> visitedOutput = vector<float>(this->n_vertices);
+    // Min binary heap
+    MinHeap minHeap = MinHeap(this->n_vertices);
+    // Initialize min heap
+    for (unsigned i = 0; i < this->n_vertices; i++)
+    {
+      minHeap.harr[i] = newMinHeapNode(i, cost[i]);
+      minHeap.pos[i] = i;
+    }
+    minHeap.heap_size = (int)this->n_vertices;
+    // Set initial vertex cost to 0 and its parent to itself
+    cost[vertex] = 0;
+    parent[vertex] = (float)vertex;
+    minHeap.decreaseKey(vertex, cost[vertex]);
+    // While the heap is not empty
+    while (!minHeap.isEmpty())
+    {
+      // Get vertex "u" of minimum cost
+      // and remove it from the heap
+      MinHeapNode *minVertex = minHeap.extractMin();
+      int u = minVertex->v;
+      // Mark as visited
+      visited[u] = true;
+      // For each adjacent vertex "v" of "u"
+      vector<tuple<int, float>> neighbors = this->get_neighbors(u);
+      for (auto it = neighbors.begin(); it != neighbors.end(); ++it)
+      {
+        int v = get<0>(*it);
+        float weight = get<1>(*it);
+        if (minHeap.isInMinHeap(v) && cost[v] > weight)
+        {
+          parent[v] = (float)u;
+          cost[v] = weight;
+          minHeap.decreaseKey(v, cost[v]);
+        }
+      }
+    }
+    // Write results to file (if requested)
+    if (!(filename == ""))
+    {
+      ofstream file(filename);
+      file << this->n_vertices << endl;
+      for (unsigned int i = 0; i < this->n_vertices; i++)
+      {
+        if (cost[i] != 0)
+          file << i + 1 << " " << parent[i] + 1 << " " << cost[i] << endl;
+      }
+      file.close();
+    }
+    // Generate visited output
+    for (unsigned int i = 0; i < this->n_vertices; i++)
+      if (visited[i])
+        visitedOutput[i] = 1;
+    // Return output
+    output.push_back(parent);
+    output.push_back(cost);
     output.push_back(visitedOutput);
     return output;
   }
