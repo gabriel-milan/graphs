@@ -42,6 +42,12 @@ diameter_results = [
     0.0,
 ]
 
+eccentricity_results = [
+    6.0,
+    6.0,
+    0.0,
+]
+
 distance_results = [
     3.0,
     4.0,
@@ -58,6 +64,7 @@ def test_adjmatrix():
         assert g.count_components() == components_results[i]
         assert g.get_degree_info() == degree_info_results[i]
         assert g.get_diameter() == diameter_results[i]
+        assert g.get_eccentricity(1) == eccentricity_results[i]
         assert g.get_distance(1, 3) == distance_results[i]
         g.export_to_file("graph.tmp")
         g2 = graphs.AdjacencyMatrixGraph("graph.tmp")
@@ -74,6 +81,7 @@ def test_adjvectors():
         assert g.count_components() == components_results[i]
         assert g.get_degree_info() == degree_info_results[i]
         assert g.get_diameter() == diameter_results[i]
+        assert g.get_eccentricity(1) == eccentricity_results[i]
         assert g.get_distance(1, 3) == distance_results[i]
         g.export_to_file("graph.tmp")
         g2 = graphs.AdjacencyMatrixGraph("graph.tmp")

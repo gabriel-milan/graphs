@@ -490,6 +490,16 @@ public:
     return this->get_all_distances(vertexA)[vertexB - 1];
   }
 
+  float get_eccentricity(int vertex)
+  {
+    vector<float> distances = this->get_all_distances(vertex);
+    float eccentricity = 0;
+    for (auto it = distances.begin(); it != distances.end(); ++it)
+      if ((*it > eccentricity) && (*it != numeric_limits<int>::max()))
+        eccentricity = *it;
+    return eccentricity;
+  }
+
   float get_diameter()
   {
     float diameter = 0;
