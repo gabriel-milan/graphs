@@ -492,10 +492,17 @@ public:
 
   float get_eccentricity(int vertex)
   {
-    vector<float> distances = this->get_all_distances(vertex);
     float eccentricity = 0;
-    for (auto it = distances.begin(); it != distances.end(); ++it)
-      if ((*it > eccentricity) && (*it != numeric_limits<int>::max()))
+    vector<float> distances = this->get_all_distances(vertex);
+    vector<float> max_distances;
+    mutex *lock = new mutex();
+    parallel_for_with_input<float>(
+        this->n_vertices, lock, &distances, &max_distances, [this](int start, int end, mutex *lock, vector<float> *inputs, vector<float> *results) {
+          this->process_chunk_for_eccentricity(start, end, lock, inputs, results);
+        },
+        true);
+    for (auto it = max_distances.begin(); it != max_distances.end(); ++it)
+      if (*it > eccentricity)
         eccentricity = *it;
     return eccentricity;
   }
@@ -568,6 +575,16 @@ protected:
     }
     lock->lock();
     diameters->push_back(d);
+    lock->unlock();
+  }
+  void process_chunk_for_eccentricity(int start, int end, mutex *lock, vector<float> *input, vector<float> *results)
+  {
+    float d = 0;
+    for (int i = start; i < end; i++)
+      if ((input->at(i) > d) && (input->at(i) != numeric_limits<int>::max()))
+        d = input->at(i);
+    lock->lock();
+    results->push_back(d);
     lock->unlock();
   }
 };
