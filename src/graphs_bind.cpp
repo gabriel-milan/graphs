@@ -15,7 +15,11 @@ PYBIND11_MODULE(graphs, m)
 
     py::class_<AdjacencyMatrixGraph>(m, "AdjacencyMatrixGraph")
         .def(py::init<string>())
-        .def("add_edge", &AdjacencyMatrixGraph::add_edge)
+        .def(
+            "add_edge", [](AdjacencyMatrixGraph &self, int vertexA, int vertexB, float weight) {
+                return self.add_edge(vertexA, vertexB, weight);
+            },
+            py::arg("vertexA"), py::arg("vertexB"), py::arg("weight") = (float)1.0)
         .def("bfs", &AdjacencyMatrixGraph::bfs)
         .def("dfs", &AdjacencyMatrixGraph::dfs)
         .def("info_to_file", &AdjacencyMatrixGraph::info_to_file)
@@ -31,7 +35,11 @@ PYBIND11_MODULE(graphs, m)
 
     py::class_<AdjacencyVectorsGraph>(m, "AdjacencyVectorsGraph")
         .def(py::init<string>())
-        .def("add_edge", &AdjacencyVectorsGraph::add_edge)
+        .def(
+            "add_edge", [](AdjacencyVectorsGraph &self, int vertexA, int vertexB, float weight) {
+                return self.add_edge(vertexA, vertexB, weight);
+            },
+            py::arg("vertexA"), py::arg("vertexB"), py::arg("weight") = (float)1.0)
         .def("bfs", &AdjacencyVectorsGraph::bfs)
         .def("dfs", &AdjacencyVectorsGraph::dfs)
         .def("info_to_file", &AdjacencyVectorsGraph::info_to_file)

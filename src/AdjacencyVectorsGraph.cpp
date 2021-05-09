@@ -8,6 +8,7 @@
 #include <queue>
 #include <stack>
 #include <string>
+#include <tuple>
 #include <vector>
 #include "utils.cpp"
 #include "Graph.hpp"
@@ -31,27 +32,35 @@ public:
     unsigned vertices = (unsigned)stoi(str);
     this->n_vertices = vertices;
     // Generate adjacency vectors
-    this->adjacencyVectors = vector<vector<int>>(vertices);
+    this->adjacencyVectors = vector<vector<tuple<int, float>>>(vertices);
     // Iterate over file getting edges and adding them
     while (getline(graphFile, str))
     {
-      vector<string> edgeVerticesStr = vector<string>(2);
+      vector<string> edgeVerticesStr;
       split(str, edgeVerticesStr, ' ');
-      vector<int> edgeVertices = vec_stoi<int>(edgeVerticesStr);
-      this->add_edge(edgeVertices[0], edgeVertices[1]);
+      if (edgeVerticesStr.size() == 3)
+      {
+        this->is_weighted = true;
+        vector<float> edgeVertices = vec_stof<float>(edgeVerticesStr);
+        this->add_edge((int)edgeVertices[0], (int)edgeVertices[1], edgeVertices[2]);
+      }
+      else
+      {
+        vector<int> edgeVertices = vec_stoi<int>(edgeVerticesStr);
+        this->add_edge(edgeVertices[0], edgeVertices[1]);
+      }
       this->n_edges += 1;
     }
   }
 
-  void add_edge(int vertexA, int vertexB)
+  void add_edge(int vertexA, int vertexB, float weight = 1.0)
   {
     // If vertexB is not already connected with vertex A
-    if (std::find(this->adjacencyVectors.at(vertexA - 1).begin(), this->adjacencyVectors.at(vertexA - 1).end(), vertexB) == this->adjacencyVectors.at(vertexA - 1).end())
+    if (!contain_tuples_vec(this->adjacencyVectors.at(vertexA - 1), vertexB))
     {
-      this->n_edges++;
-      this->adjacencyVectors.at(vertexA - 1).push_back(vertexB);
+      this->adjacencyVectors.at(vertexA - 1).push_back(make_tuple(vertexB, weight));
       sort(this->adjacencyVectors.at(vertexA - 1).begin(), this->adjacencyVectors.at(vertexA - 1).end());
-      this->adjacencyVectors.at(vertexB - 1).push_back(vertexA);
+      this->adjacencyVectors.at(vertexB - 1).push_back(make_tuple(vertexA, weight));
       sort(this->adjacencyVectors.at(vertexB - 1).begin(), this->adjacencyVectors.at(vertexB - 1).end());
     }
   }
@@ -63,23 +72,26 @@ public:
       cout << i + 1 << " => [";
       for (size_t j = 0; j < this->adjacencyVectors[i].size(); j++)
       {
-        cout << this->adjacencyVectors[i][j] << ", ";
+        cout << "(" << get<0>(this->adjacencyVectors[i][j]) << ", " << get<1>(this->adjacencyVectors[i][j]) << ")"
+             << ", ";
       }
       cout << "]" << endl;
     }
   }
 
-  vector<int> get_neighbors(int vertex)
+  vector<tuple<int, float>> get_neighbors(int vertex)
   {
     // Output vector
-    vector<int> output;
+    vector<tuple<int, float>> output;
     // Add every neighbor to output vector
     for (size_t i = 0; i < this->adjacencyVectors[vertex].size(); i++)
-      output.push_back(this->adjacencyVectors[vertex][i] - 1);
+    {
+      output.push_back(make_tuple(get<0>(this->adjacencyVectors[vertex][i]) - 1, get<1>(this->adjacencyVectors[vertex][i])));
+    }
     // Return
     return output;
   }
 
 protected:
-  vector<vector<int>> adjacencyVectors;
+  vector<vector<tuple<int, float>>> adjacencyVectors;
 };

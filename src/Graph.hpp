@@ -11,7 +11,7 @@ class Graph
 public:
   Graph(){};
   virtual void add_edge(int vertexA, int vertexB){};
-  virtual vector<int> get_neighbors(int vertex) { return vector<int>(0); };
+  virtual vector<tuple<int, float>> get_neighbors(int vertex) { return vector<tuple<int, float>>(0); };
 
   unsigned get_n_edges() { return this->n_edges; };
 
@@ -40,9 +40,12 @@ public:
     // TODO: Look for a better way of doing this
     for (unsigned i = 0; i < this->n_vertices; i++)
     {
-      vector<int> neighbors = this->get_neighbors(i);
+      vector<tuple<int, float>> neighbors = this->get_neighbors(i);
       for (auto it = neighbors.begin(); it != neighbors.end(); ++it)
-        file << i + 1 << " " << *it + 1 << endl;
+        if (this->is_weighted)
+          file << i + 1 << " " << get<0>(*it) + 1 << " " << get<1>(*it) << endl;
+        else
+          file << i + 1 << " " << get<0>(*it) + 1 << endl;
     }
   }
 
@@ -72,20 +75,23 @@ public:
       int v = q.front();
       q.pop();
       // For each adjacent vertex of v
-      vector<int> neighbors = this->get_neighbors(v);
+      vector<tuple<int, float>> neighbors = this->get_neighbors(v);
       for (auto it = neighbors.begin(); it != neighbors.end(); ++it)
+      {
+        int it_index = get<0>(*it);
         // If the adjacent vertex is not visited
-        if (!visited[*it])
+        if (!visited[it_index])
         {
           // Push adjacent vertex into queue
-          q.push(*it);
+          q.push(it_index);
           // Mark adjacent vertex as visited
-          visited[*it] = true;
+          visited[it_index] = true;
           // Set parent to v
-          parent[*it] = v;
+          parent[it_index] = v;
           // Set level to parent level + 1
-          level[*it] = level[v] + 1;
+          level[it_index] = level[v] + 1;
         }
+      }
     }
     // Write results to file (if requested)
     if (!(filename == ""))
@@ -132,14 +138,14 @@ public:
       // Pop vertex from stack
       int u = s.top();
       s.pop();
-      vector<int> neighbors = this->get_neighbors(u);
+      vector<tuple<int, float>> neighbors = this->get_neighbors(u);
       // If this vertex has no parent
       if (parent[u] == -1)
       {
         // A possible parent for it is the top of the parent stack
         int possibleParent = parentStack.top();
         // While this possible parent has no edge with vertex "u"
-        while (!Contains(neighbors, possibleParent))
+        while (!contain_tuples_vec(neighbors, possibleParent))
         {
           // Pop parent from stack and get another
           parentStack.pop();
@@ -157,9 +163,9 @@ public:
         // Mark u as visited
         visited[u] = true;
         // For each adjacent vertex of u
-        for (vector<int>::reverse_iterator it = neighbors.rbegin(); it != neighbors.rend(); ++it)
+        for (auto it = neighbors.rbegin(); it != neighbors.rend(); ++it)
           // Push adjacent vertex into stack
-          s.push(*it);
+          s.push(get<0>(*it));
       }
     }
     // Write results to file (if requested)
@@ -285,6 +291,7 @@ public:
 protected:
   unsigned n_edges;
   unsigned n_vertices;
+  bool is_weighted = false;
   void process_chunk_for_diameter(int start, int end, mutex *lock, vector<unsigned> *diameters)
   {
     unsigned d = 0;

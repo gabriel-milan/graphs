@@ -31,15 +31,13 @@ size_t split(const string &txt, vector<string> &strs, char ch)
 }
 
 /*
- * Code extracted from
+ * Code adapted from
  * https://stackoverflow.com/a/18619293/9944075
  */
-template <typename T>
-const bool Contains(std::vector<T> &Vec, const T &Element)
+const bool contain_tuples_vec(std::vector<tuple<int, float>> &vec, const int &element)
 {
-  if (std::find(Vec.begin(), Vec.end(), Element) != Vec.end())
+  if (std::find_if(vec.begin(), vec.end(), [&element](const auto &item) { return get<0>(item) == element; }) != vec.end())
     return true;
-
   return false;
 }
 
@@ -49,6 +47,15 @@ vector<T> vec_stoi(const vector<string> vec)
   vector<T> output;
   for (auto it = vec.begin(); it != vec.end(); ++it)
     output.push_back((T)stoi(*it));
+  return output;
+}
+
+template <typename T>
+vector<T> vec_stof(const vector<string> vec)
+{
+  vector<T> output;
+  for (auto it = vec.begin(); it != vec.end(); ++it)
+    output.push_back((T)stof(*it));
   return output;
 }
 
