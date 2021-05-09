@@ -44,6 +44,8 @@ public:
       {
         this->is_weighted = true;
         vector<float> edgeVertices = vec_stof<float>(edgeVerticesStr);
+        if (edgeVertices[2] < 0)
+          this->has_negative_weight = true;
         this->add_edge((int)edgeVertices[0], (int)edgeVertices[1], edgeVertices[2]);
       }
       else

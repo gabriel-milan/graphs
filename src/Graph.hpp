@@ -191,6 +191,12 @@ public:
 
   vector<vector<float>> dijkstra(int vertex, string filename)
   {
+    // Checking if graph has negative weights
+    if (this->has_negative_weight)
+    {
+      cout << "[ERROR] This graph has negative weights, Dijkstra algorithm won't work!" << endl;
+      return vector<vector<float>>(0);
+    }
     // Fixing 1-indexed to 0-indexed
     vertex--;
     // Output vector
@@ -302,10 +308,113 @@ public:
     return output;
   }
 
+  vector<float> build_path_from_parents(float vertexA, float vertexB, vector<float> parents)
+  {
+    vector<float> output;
+    vertexA--;
+    vertexB--;
+    output.push_back(vertexB);
+    while (parents[vertexB] != vertexA)
+    {
+      output.push_back(parents[vertexB]);
+      vertexB = parents[vertexB];
+    }
+    output.push_back(vertexA);
+    reverse(output.begin(), output.end());
+    return output;
+  }
+
+  vector<vector<float>> get_all_paths(int vertexA)
+  {
+    vector<vector<float>> paths;
+    if (this->is_weighted)
+      if (!this->has_negative_weight)
+      {
+        vector<vector<float>> output = this->dijkstra(vertexA, "");
+        for (int vertexB = 1; vertexB <= this->n_vertices; vertexB++)
+        {
+          if ((output[1][vertexB - 1] == numeric_limits<int>::max()) || (vertexA == vertexB))
+            paths.push_back(vector<float>(0));
+          else
+            paths.push_back(build_path_from_parents((float)vertexA, (float)vertexB, output[0]));
+        }
+        return paths;
+      }
+      else
+      {
+        cout << "[ERROR] Can't compute paths for a graph with negative weights." << endl;
+        return vector<vector<float>>(0);
+      }
+    else
+    {
+      vector<vector<int>> bfsOutput = this->bfs(vertexA, "");
+      vector<float> output;
+      for (auto it = bfsOutput[0].begin(); it != bfsOutput[0].end(); ++it)
+        output.push_back((float)*it);
+      for (int vertexB = 1; vertexB <= this->n_vertices; vertexB++)
+      {
+        if ((bfsOutput[1][vertexB - 1] == numeric_limits<int>::max()) || (vertexA == vertexB))
+          paths.push_back(vector<float>(0));
+        else
+          paths.push_back(build_path_from_parents((float)vertexA, (float)vertexB, output));
+      }
+      return paths;
+    }
+  }
+
+  vector<float> get_path(int vertexA, int vertexB)
+  {
+    if (this->is_weighted)
+      if (!this->has_negative_weight)
+      {
+        vector<vector<float>> output = this->dijkstra(vertexA, "");
+        if (output[1][vertexB - 1] == numeric_limits<int>::max())
+          return vector<float>(0);
+        return build_path_from_parents((float)vertexA, (float)vertexB, output[0]);
+      }
+      else
+      {
+        cout << "[ERROR] Can't compute paths for a graph with negative weights." << endl;
+        return vector<float>(0);
+      }
+    else
+    {
+      vector<vector<int>> bfsOutput = this->bfs(vertexA, "");
+      vector<float> output;
+      for (auto it = bfsOutput[0].begin(); it != bfsOutput[0].end(); ++it)
+        output.push_back((float)*it);
+      if (bfsOutput[1][vertexB - 1] == numeric_limits<int>::max())
+        return vector<float>(0);
+      return build_path_from_parents((float)vertexA, (float)vertexB, output);
+    }
+  }
+
+  vector<float> get_all_distances(int vertexA)
+  {
+    if (this->is_weighted)
+      if (!this->has_negative_weight)
+      {
+        vector<vector<float>> output = this->dijkstra(vertexA, "");
+        return output[1];
+      }
+      else
+      {
+        cout << "[ERROR] Can't compute distances for a graph with negative weights." << endl;
+        return vector<float>(this->n_vertices, numeric_limits<int>::max());
+      }
+    else
+    {
+      vector<vector<int>> bfsOutput = this->bfs(vertexA, "");
+      vector<float> output;
+      for (auto it = bfsOutput[1].begin(); it != bfsOutput[1].end(); ++it)
+        output.push_back((float)*it);
+      return output;
+    }
+  }
+
   unsigned get_distance(int vertexA, int vertexB)
   {
-    vector<vector<int>> bfsOutput = this->bfs(vertexA, "");
-    return bfsOutput[1][vertexB - 1];
+    return this->get_all_distances(vertexA)[vertexB - 1];
   }
 
   unsigned get_diameter()
@@ -363,6 +472,7 @@ protected:
   unsigned n_edges;
   unsigned n_vertices;
   bool is_weighted = false;
+  bool has_negative_weight = false;
   void process_chunk_for_diameter(int start, int end, mutex *lock, vector<unsigned> *diameters)
   {
     unsigned d = 0;
