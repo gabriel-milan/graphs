@@ -68,7 +68,7 @@ public:
       cout << "| ";
       for (size_t j = 0; j < this->adjacencyMatrix[i].size(); j++)
       {
-        cout << this->adjacencyMatrix[i][j] << cout.precision(4) << " ";
+        cout << this->adjacencyMatrix[i][j] << " ";
       }
       cout << "|" << endl;
     }
